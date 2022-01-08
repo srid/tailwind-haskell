@@ -1,4 +1,6 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "exe:tailwind"
+      component: "lib:tailwind"
+    - path: "./exe"
+      component: "exe:tailwind-run"

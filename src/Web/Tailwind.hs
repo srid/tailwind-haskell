@@ -142,8 +142,8 @@ withTmpFile :: MonadUnliftIO m => Text -> (FilePath -> m a) -> m a
 withTmpFile s f = do
   withSystemTempFile "ema-tailwind-tmpfile" $ \fp h -> do
     liftIO $ do
-      print fp
-      print s
+      putStrLn $ "$ cat " <> fp
+      putTextLn s
       hPut h (encodeUtf8 s) >> hClose h
     f fp
       `finally` removeFile fp

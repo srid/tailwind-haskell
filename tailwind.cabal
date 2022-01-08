@@ -32,6 +32,9 @@ common c
 
   build-depends:
     , base
+    , data-default
+    , lens
+    , monad-logger
     , relude
 
   default-extensions:
@@ -48,14 +51,6 @@ common c
 
   default-language:   Haskell2010
 
-executable tailwind-run
-  import:         c
-  hs-source-dirs: exe
-  main-is:        Main.hs
-  build-depends:
-    , tailwind
-    , with-utf8
-
 library
   import:          c
   hs-source-dirs:  src
@@ -65,13 +60,10 @@ library
     , async
     , bytestring
     , containers
-    , data-default
     , deriving-aeson
     , directory
     , filepath
     , filepattern
-    , lens
-    , monad-logger
     , mtl
     , neat-interpolation
     , profunctors
@@ -81,4 +73,12 @@ library
     , time
     , unliftio
     , which
+    , with-utf8
+
+executable tailwind-run
+  import:         c
+  hs-source-dirs: exe
+  main-is:        Main.hs
+  build-depends:
+    , tailwind
     , with-utf8
