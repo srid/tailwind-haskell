@@ -1,5 +1,5 @@
 {
-  description = "haskell-template's description";
+  description = "tailwind's description";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/568e0bc498ee51fdd88e1e94089de05f2fdbd18b";
     flake-utils.url = "github:numtide/flake-utils";
@@ -32,7 +32,7 @@
         project = returnShellEnv:
           pkgs.haskellPackages.developPackage {
             inherit returnShellEnv;
-            name = "haskell-template";
+            name = "tailwind";
             root = ./.;
             withHoogle = false;
             overrides = self: super: with pkgs.haskell.lib; {
