@@ -1,4 +1,6 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "exe:haskell-template"
+      component: "lib:tailwind"
+    - path: "./exe"
+      component: "exe:tailwind-run"
