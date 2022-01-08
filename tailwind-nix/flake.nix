@@ -20,7 +20,7 @@
         tailwind =
           let
             p = tailwindPkgs.package;
-            node_modules = "${p}/lib/node_modules/srid-tailwind/node_modules";
+            node_modules = "${p}/lib/node_modules/tailwind-nix/node_modules";
           in
           pkgs.writeShellScriptBin "tailwind"
             ''
