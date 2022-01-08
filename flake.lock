@@ -108,11 +108,11 @@
       },
       "locked": {
         "narHash": "sha256-4kt3lt9N4CLU8ER/aGPGvwskzPZwUOyKw93qJU9RU2k=",
-        "path": "/nix/store/239cyax2srry1yazbnbffnj30gb8hwf6-source/tailwind-nix",
+        "path": "./tailwind-nix",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/239cyax2srry1yazbnbffnj30gb8hwf6-source/tailwind-nix",
+        "path": "./tailwind-nix",
         "type": "path"
       }
     }
