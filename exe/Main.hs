@@ -1,20 +1,48 @@
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Main where
 
+import qualified Control.Applicative.Combinators.NonEmpty as NE
 import Control.Lens.Operators
 import Control.Monad.Logger.CallStack (runStdoutLoggingT)
 import Data.Default (Default (def))
 import Main.Utf8 (withUtf8)
-import System.Environment (getArgs)
+import Options.Applicative
+import System.FilePattern (FilePattern)
 import Web.Tailwind
+
+data Cli = Cli
+  { content :: NonEmpty FilePattern,
+    mode :: Mode
+  }
+  deriving (Eq, Show)
+
+cliParser :: Parser Cli
+cliParser = do
+  content <- NE.some (argument str (metavar "SOURCES..."))
+  mode <- modeParser
+  pure Cli {..}
+
+modeParser :: Parser Mode
+modeParser = do
+  bool Production JIT <$> switch (long "watch" <> short 'w' <> help "Run JIT")
 
 main :: IO ()
 main = do
-  -- For withUtf8, see https://serokell.io/blog/haskell-with-utf8
   withUtf8 $ do
-    args <- getArgs
-    print args
+    cli <- execParser opts
+    print cli
     runStdoutLoggingT $
       runTailwind $
-        def & tailwindConfig . tailwindConfigContent .~ args
+        def
+          & tailwindConfig . tailwindConfigContent .~ toList (content cli)
+          & tailwindMode .~ mode cli
+  where
+    opts =
+      info
+        (cliParser <**> helper)
+        ( fullDesc
+            <> progDesc "Run Tailwind"
+        )

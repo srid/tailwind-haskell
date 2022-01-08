@@ -33,6 +33,8 @@ common c
   build-depends:
     , base
     , data-default
+    , filepath
+    , filepattern
     , lens
     , monad-logger
     , relude
@@ -62,8 +64,6 @@ library
     , containers
     , deriving-aeson
     , directory
-    , filepath
-    , filepattern
     , mtl
     , neat-interpolation
     , profunctors
@@ -80,5 +80,7 @@ executable tailwind-run
   hs-source-dirs: exe
   main-is:        Main.hs
   build-depends:
+    , optparse-applicative
+    , parser-combinators
     , tailwind
     , with-utf8
