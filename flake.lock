@@ -107,13 +107,17 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "narHash": "sha256-4kt3lt9N4CLU8ER/aGPGvwskzPZwUOyKw93qJU9RU2k=",
-        "path": "./tailwind-nix",
-        "type": "path"
+        "lastModified": 1641667991,
+        "narHash": "sha256-c49tfYdq3rztwJuQ6/GT4QdQh0fN/vEH75Ny0/+9Mvw=",
+        "owner": "srid",
+        "repo": "tailwind-nix",
+        "rev": "e27e11a66ae26533b265eb826eec357fbf481c92",
+        "type": "github"
       },
       "original": {
-        "path": "./tailwind-nix",
-        "type": "path"
+        "owner": "srid",
+        "repo": "tailwind-nix",
+        "type": "github"
       }
     }
   },
