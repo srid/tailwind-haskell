@@ -6,4 +6,6 @@ Run TailwindCSS CLI [without needing](https://www.srid.ca/nojs) to touch anythin
 cabal run tailwind-run -- 'src/**/.hs'
 ```
 
-Compiles CSS classes in those file pattersn, and writes `./tailwind.css`. Pass `-w` to run in JIT watcher mode.
+Compiles CSS classes in those file paths or patterns, and writes `./tailwind.css`. Pass `-w` to run in JIT watcher mode.
+
+Used in Emanote, and Ema apps.

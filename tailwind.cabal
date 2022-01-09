@@ -9,15 +9,16 @@ category:           Web
 
 -- TODO: Before hackage release.
 -- A short (one-line) description of the package.
--- synopsis:
+synopsis:           Tailwind wrapped in Haskell
 
 -- A longer description of the package.
--- description:
+description:        Run Tailwind from Haskell without touching JavaScript
 
 -- A URL where users can report bugs.
 -- bug-reports:
 
 extra-source-files:
+  CHANGELOG.md
   LICENSE
   README.md
 
@@ -31,7 +32,7 @@ common c
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
 
   build-depends:
-    , base
+    , base          >=4.13.0.0 && <=4.17.0.0
     , data-default
     , filepath
     , filepattern
