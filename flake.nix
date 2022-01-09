@@ -59,9 +59,18 @@
                 ]);
           };
       in
-      {
+      rec {
         # Used by `nix build` & `nix run` (prod exe)
-        defaultPackage = project false;
+        packages.tailwind = project false;
+        defaultPackage = packages.tailwind;
+        defaultApp = rec {
+          type = "app";
+          script = pkgs.writers.writeBash "tailwind-run.sh" ''
+            set -xe
+            exec ${packages.tailwind}/bin/tailwind-run $* 
+          '';
+          program = builtins.toString script;
+        };
 
         # Used by `nix develop` (dev shell)
         devShell = project true;
