@@ -15,8 +15,7 @@ synopsis:           Tailwind wrapped in Haskell
 description:        Run Tailwind from Haskell without touching JavaScript
 
 -- A URL where users can report bugs.
--- bug-reports:
-
+bug-reports:        https://github.com/srid/tailwind-haskell
 extra-source-files:
   CHANGELOG.md
   LICENSE

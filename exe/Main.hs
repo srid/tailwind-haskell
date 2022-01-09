@@ -15,6 +15,7 @@ import Web.Tailwind
 
 data Cli = Cli
   { content :: NonEmpty FilePattern,
+    output :: FilePath,
     mode :: Mode
   }
   deriving (Eq, Show)
@@ -22,6 +23,7 @@ data Cli = Cli
 cliParser :: Parser Cli
 cliParser = do
   content <- NE.some (argument str (metavar "SOURCES..."))
+  output <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
   mode <- modeParser
   pure Cli {..}
 
@@ -38,6 +40,7 @@ main = do
       runTailwind $
         def
           & tailwindConfig . tailwindConfigContent .~ toList (content cli)
+          & tailwindOutput .~ output cli
           & tailwindMode .~ mode cli
   where
     opts =
