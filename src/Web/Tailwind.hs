@@ -108,7 +108,7 @@ instance Text.Show.Show TailwindConfig where
       [text|
       module.exports =
         Object.assign(
-          JSON.parse('${config}'),
+          ${config},
           {
             theme: {
               extend: {},
