@@ -134,7 +134,8 @@ runTailwind :: (MonadUnliftIO m, MonadLogger m, HasCallStack) => Tailwind -> m (
 runTailwind Tailwind {..} = do
   withTmpFile (show _tailwindConfig) $ \configFile ->
     withTmpFile (unCss _tailwindInput) $ \inputFile ->
-      callTailwind $ ["-c", configFile, "-i", inputFile, "-o", _tailwindOutput] <> modeArgs _tailwindMode
+      let f = bool id (failIfFileNotCreated _tailwindOutput) (_tailwindMode == Production)
+       in f $ callTailwind $ ["-c", configFile, "-i", inputFile, "-o", _tailwindOutput] <> modeArgs _tailwindMode
   when (_tailwindMode == JIT) $
     error "Tailwind exited unexpectedly!"
 
@@ -147,6 +148,21 @@ withTmpFile s f = do
       hPut h (encodeUtf8 s) >> hClose h
     f fp
       `finally` removeFile fp
+
+-- Workaround for https://github.com/srid/emanote/issues/232
+--
+-- If the given IO action doesnot create this file (we remove the file before
+-- running the IO action), then fail with `error`.
+failIfFileNotCreated :: (MonadUnliftIO m, HasCallStack) => FilePath -> m a -> m a
+failIfFileNotCreated fp m = do
+  liftIO (doesFileExist fp) >>= \case
+    True -> removeFile fp
+    _ -> pure ()
+  x <- m
+  exists <- liftIO $ doesFileExist fp
+  if exists
+    then pure x
+    else error $ "File not created: " <> toText fp
 
 callTailwind :: (MonadIO m, MonadLogger m) => [String] -> m ()
 callTailwind args = do
