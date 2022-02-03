@@ -1,7 +1,8 @@
 {
-  description = "tailwind-haskell";
+  description = "tailwind's description";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/554d2d8aa25b6e583575459c297ec23750adb6cb";
+    nixpkgs.url = "github:nixos/nixpkgs/568e0bc498ee51fdd88e1e94089de05f2fdbd18b";
+    tailwind-nix.url = "github:srid/tailwind-nix";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = {
       url = "github:edolstra/flake-compat";
@@ -54,7 +55,7 @@
                   haskell-language-server
                   ormolu
                   pkgs.nixpkgs-fmt
-                  pkgs.nodePackages.tailwindcss
+                  inputs.tailwind-nix.defaultPackage.${system}
                 ]);
           };
       in
