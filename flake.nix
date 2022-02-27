@@ -1,8 +1,7 @@
 {
-  description = "tailwind's description";
+  description = "tailwind-haskell's description";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/568e0bc498ee51fdd88e1e94089de05f2fdbd18b";
-    tailwind-nix.url = "github:srid/tailwind-nix";
+    nixpkgs.url = "github:nixos/nixpkgs/22dc22f8cedc58fcb11afe1acb08e9999e78be9c";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = {
       url = "github:edolstra/flake-compat";
@@ -15,21 +14,6 @@
         overlays = [ ];
         pkgs =
           import nixpkgs { inherit system overlays; config.allowBroken = true; };
-        # https://github.com/NixOS/nixpkgs/issues/140774#issuecomment-976899227
-        m1MacHsBuildTools =
-          pkgs.haskellPackages.override {
-            overrides = self: super:
-              let
-                workaround140774 = hpkg: with pkgs.haskell.lib;
-                  overrideCabal hpkg (drv: {
-                    enableSeparateBinOutput = false;
-                  });
-              in
-              {
-                ghcid = workaround140774 super.ghcid;
-                ormolu = workaround140774 super.ormolu;
-              };
-          };
         project = returnShellEnv:
           pkgs.haskellPackages.developPackage {
             inherit returnShellEnv;
@@ -45,9 +29,7 @@
             };
             modifier = drv:
               pkgs.haskell.lib.addBuildTools drv
-                (with (if system == "aarch64-darwin"
-                then m1MacHsBuildTools
-                else pkgs.haskellPackages); [
+                (with pkgs.haskellPackages; [
                   # Specify your build/dev dependencies here. 
                   cabal-fmt
                   cabal-install
@@ -55,12 +37,18 @@
                   haskell-language-server
                   ormolu
                   pkgs.nixpkgs-fmt
-                  inputs.tailwind-nix.defaultPackage.${system}
+
+                  # TailwindCSS with all the plugins.
+                  pkgs.nodePackages.tailwindcss
+                  pkgs.nodePackages."@tailwindcss/aspect-ratio"
+                  pkgs.nodePackages."@tailwindcss/forms"
+                  pkgs.nodePackages."@tailwindcss/language-server"
+                  pkgs.nodePackages."@tailwindcss/line-clamp"
+                  pkgs.nodePackages."@tailwindcss/typography"
                 ]);
           };
       in
       rec {
-        # Used by `nix build` & `nix run` (prod exe)
         packages.tailwind = project false;
         defaultPackage = packages.tailwind;
         defaultApp = rec {
