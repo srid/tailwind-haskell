@@ -14,6 +14,16 @@
         overlays = [ ];
         pkgs =
           import nixpkgs { inherit system overlays; config.allowBroken = true; };
+        tailwindCss =
+          pkgs.nodePackages.tailwindcss.overrideAttrs (oa: {
+            plugins = [
+              pkgs.nodePackages."@tailwindcss/aspect-ratio"
+              pkgs.nodePackages."@tailwindcss/forms"
+              pkgs.nodePackages."@tailwindcss/language-server"
+              pkgs.nodePackages."@tailwindcss/line-clamp"
+              pkgs.nodePackages."@tailwindcss/typography"
+            ];
+          });
         project = returnShellEnv:
           pkgs.haskellPackages.developPackage {
             inherit returnShellEnv;
@@ -37,14 +47,7 @@
                   haskell-language-server
                   ormolu
                   pkgs.nixpkgs-fmt
-
-                  # TailwindCSS with all the plugins.
-                  pkgs.nodePackages.tailwindcss
-                  pkgs.nodePackages."@tailwindcss/aspect-ratio"
-                  pkgs.nodePackages."@tailwindcss/forms"
-                  pkgs.nodePackages."@tailwindcss/language-server"
-                  pkgs.nodePackages."@tailwindcss/line-clamp"
-                  pkgs.nodePackages."@tailwindcss/typography"
+                  tailwindCss
                 ]);
           };
       in
