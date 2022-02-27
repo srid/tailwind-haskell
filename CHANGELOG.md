@@ -1,5 +1,9 @@
 # Revision history for tailwind (Haskell)
 
+## Unreleased
+
+- Switch to official nixpkgs package for TailwindCSS and its plugins
+
 ## 0.2.0.0 -- 2022-02-03
 
 - Add `--output`
