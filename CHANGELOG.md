@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Switch to official nixpkgs package for TailwindCSS and its plugins
+- [nix] Use relude 1.0
 
 ## 0.2.0.0 -- 2022-02-03
 

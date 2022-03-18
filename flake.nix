@@ -36,6 +36,7 @@
               # Example: 
               # > NanoID = self.callCabal2nix "NanoID" inputs.NanoID { };
               # Assumes that you have the 'NanoID' flake input defined.
+              relude = self.callHackage "relude" "1.0.0.1" { };  # Not on nixpkgs, for some reason.
             };
             modifier = drv:
               pkgs.haskell.lib.addBuildTools drv
