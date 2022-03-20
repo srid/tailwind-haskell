@@ -80,6 +80,7 @@ executable tailwind-run
   hs-source-dirs: exe
   main-is:        Main.hs
   build-depends:
+    , optics-core
     , optparse-applicative
     , parser-combinators
     , tailwind

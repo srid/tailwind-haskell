@@ -1,14 +1,13 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Main where
 
 import qualified Control.Applicative.Combinators.NonEmpty as NE
-import Control.Lens.Operators
 import Control.Monad.Logger.CallStack (runStdoutLoggingT)
 import Data.Default (Default (def))
 import Main.Utf8 (withUtf8)
+import Optics.Core ((%), (.~))
 import Options.Applicative
 import System.FilePattern (FilePattern)
 import Web.Tailwind
@@ -39,7 +38,7 @@ main = do
     runStdoutLoggingT $
       runTailwind $
         def
-          & tailwindConfig . tailwindConfigContent .~ toList (content cli)
+          & tailwindConfig % tailwindConfigContent .~ toList (content cli)
           & tailwindOutput .~ output cli
           & tailwindMode .~ mode cli
   where
