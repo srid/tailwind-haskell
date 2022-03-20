@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-- Switch to official nixpkgs package for TailwindCSS and its plugins
-- [nix] Use relude 1.0
+- Nix:
+    - Switch to official nixpkgs package for TailwindCSS and its plugins
+    - Use relude 1.0
+- Switch from lens to `optics-core`
 
 ## 0.2.0.0 -- 2022-02-03
 

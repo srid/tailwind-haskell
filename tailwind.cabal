@@ -35,8 +35,8 @@ common c
     , data-default
     , filepath
     , filepattern
-    , lens
     , monad-logger
+    , optics-th
     , relude
 
   default-extensions:

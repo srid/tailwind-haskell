@@ -26,13 +26,13 @@ module Web.Tailwind
   )
 where
 
-import Control.Lens.TH (makeLenses)
 import Control.Monad.Logger (MonadLogger, logInfoN)
 import Data.Aeson (encode)
 import Data.ByteString (hPut)
 import Data.Default (Default (def))
 import Deriving.Aeson
 import NeatInterpolation (text)
+import Optics.TH (makeLenses)
 import System.CPUTime (getCPUTime)
 import System.Directory (doesFileExist)
 import System.IO (hClose)
