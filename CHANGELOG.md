@@ -1,5 +1,9 @@
 # Revision history for tailwind (Haskell)
 
+## Unreleased
+
+- Nix: GHC 9 support
+
 ## 0.3.0.0
 
 - Nix:
