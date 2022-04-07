@@ -1,7 +1,7 @@
 {
   description = "tailwind-haskell's description";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/22dc22f8cedc58fcb11afe1acb08e9999e78be9c";
+    nixpkgs.url = "github:nixos/nixpkgs/b6966d911da89e5a7301aaef8b4f0a44c77e103c";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = {
       url = "github:edolstra/flake-compat";
@@ -36,7 +36,6 @@
               # Example: 
               # > NanoID = self.callCabal2nix "NanoID" inputs.NanoID { };
               # Assumes that you have the 'NanoID' flake input defined.
-              relude = self.callHackage "relude" "1.0.0.1" { }; # Not on nixpkgs, for some reason.
             };
             modifier = drv:
               pkgs.haskell.lib.addBuildTools drv
