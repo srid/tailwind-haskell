@@ -1,8 +1,9 @@
 {
   description = "tailwind-haskell's description";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/c48167590e3258daac6ab12a41bc2b7341e9b2ec";
-    flake-utils.url = "github:numtide/flake-utils";
+    ema.url = "github:srid/ema"; # Using ema only for its nixpkgs; TODO: don't do this, and don't use tailwind-haskell as a flake.
+    nixpkgs.follows = "ema/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils/v1.0.0";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
