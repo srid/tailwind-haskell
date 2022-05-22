@@ -24,5 +24,6 @@ cabal.project.local~
 result
 result-*
 
+.direnv
 
 tailwind.css
