@@ -54,17 +54,21 @@
       in
       rec {
         packages.tailwind = project false;
-        defaultPackage = packages.tailwind;
-        defaultApp = rec {
+        apps.default = {
           type = "app";
-          script = pkgs.writers.writeBash "tailwind-run.sh" ''
-            set -xe
-            exec ${packages.tailwind}/bin/tailwind-run $* 
-          '';
-          program = builtins.toString script;
+          program = pkgs.writeShellApplication
+            {
+              name = "tailwind-run.sh";
+              text = ''
+                set -xe
+                exec ${packages.tailwind}/bin/tailwind-run "$@"
+              '';
+            } + /bin/tailwind-run.sh;
         };
 
         # Used by `nix develop` (dev shell)
         devShell = project true;
+        defaultPackage = packages.tailwind;
+        defaultApp = apps.default;
       });
 }
