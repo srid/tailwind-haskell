@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               tailwind
-version:            0.3.0.0
+version:            0.4.0.0
 license:            MIT
 copyright:          2022 Sridhar Ratnakumar
 maintainer:         srid@srid.ca

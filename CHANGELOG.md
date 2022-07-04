@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Nix: GHC 9 support
+- Log tailwind binary used.
 
 ## 0.3.0.0
 

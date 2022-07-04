@@ -166,7 +166,7 @@ failIfFileNotCreated fp m = do
 
 callTailwind :: (MonadIO m, MonadLogger m) => [String] -> m ()
 callTailwind args = do
-  logInfoN $ "Running Tailwind compiler with args: " <> show args
+  logInfoN $ "Running Tailwind at " <> toText tailwind <> " with args: " <> show args
   liftIO (doesFileExist tailwind) >>= \case
     True ->
       timeIt $ do
