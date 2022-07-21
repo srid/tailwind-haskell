@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Nix: GHC 9 support
-- Log tailwind binary used.
+- Nix
+  - GHC 9 support
+- Log path to the tailwind binary used.
 
 ## 0.3.0.0
 
