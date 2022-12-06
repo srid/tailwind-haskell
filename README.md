@@ -10,7 +10,7 @@ Compiles CSS classes in the input file paths or patterns, and writes to the outp
 
 ## How to use as Haskell dependency via Nix
 
-https://github.com/EmaApps/emanima/blob/9482d614d4af48089c256dfccd85c479e345696d/flake.nix
+`pkgs.haskellPackages.tailwind` already wraps the necessary runtime dependencies (tailwind with plugins). You may use it along with a static which library like [which](https://github.com/obsidiansystems/which).
 
 ## Use cases
 
