@@ -10,8 +10,8 @@ Compiles CSS classes in the input file paths or patterns, and writes to the outp
 
 ## How to use as Haskell dependency via Nix
 
-`pkgs.haskellPackages.tailwind` already wraps the necessary runtime dependencies (tailwind with plugins). You may use it along with a static which library like [which](https://github.com/obsidiansystems/which).
+[`pkgs.haskellPackages.tailwind`](https://nixpkgs.haskell.page/p/tailwind) already wraps the necessary runtime dependencies (tailwind with plugins). You may use it along with [the static `which` library](https://github.com/obsidiansystems/which).
 
 ## Use cases
 
-This package is used in [Emanote](https://github.com/EmaApps/emanote) to compile the CSS file on the generated website, as well as in other [Ema apps](https://github.com/EmaApps).
+This package is used in [Emanote](https://github.com/srid/emanote) to compile the CSS file on the generated website, as well as in other [Ema apps](https://github.com/EmaApps).
