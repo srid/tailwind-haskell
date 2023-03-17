@@ -92,12 +92,7 @@ instance Default TailwindConfig where
   def =
     TailwindConfig
       { _tailwindConfigContent = []
-      , _tailwindConfigPlugins =
-          [ PluginTypography
-          , PluginLineClamp
-          , PluginForms
-          , PluginAspectRatio
-          ]
+      , _tailwindConfigPlugins = []
       }
 
 instance Default Tailwind where
