@@ -1,5 +1,6 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Main where
 
@@ -23,7 +24,7 @@ import Options.Applicative
       value,
       execParser,
       helper,
-      Parser )
+      Parser, showDefaultWith )
 import System.FilePattern (FilePattern)
 import Web.Tailwind
     ( Mode(..),
@@ -32,36 +33,38 @@ import Web.Tailwind
       tailwindMode,
       tailwindOutput,
       runTailwind,
-      OfficialPlugin(PluginAspectRatio, PluginTypography, PluginForms,
-                     PluginLineClamp),
       tailwindConfigPlugins, tailwindConfigTheme )
-import qualified Data.Aeson as Aeson
 import qualified Data.Text as Text
+import Data.Traversable (for)
+import Optics.Setter (set)
+import qualified Data.Text.IO as Text
 
 data Cli = Cli
   { content :: NonEmpty FilePattern,
     output :: FilePath,
     mode :: Mode,
-    bPluginTypography  :: Bool,
-    bPluginForms       :: Bool,
-    bPluginLineClamp   :: Bool,
-    bPluginAspectRatio :: Bool,
-    bAllPlugins        :: Bool,
-    themeJson :: FilePath
+    plugins :: Text,
+    themeJson :: Maybe FilePath
   }
   deriving (Eq, Show)
 
 cliParser :: Parser Cli
 cliParser = do
-  content            <- NE.some (argument str (metavar "SOURCES..."))
-  output             <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
-  mode               <- modeParser
-  bPluginTypography  <- switch (long "plugin-typography"   <> help "enable official typography plugin")
-  bPluginForms       <- switch (long "plugin-forms"        <> help "enable official forms plugin")
-  bPluginLineClamp   <- switch (long "plugin-line-clamp"   <> help "enable official line-clamp plugin")
-  bPluginAspectRatio <- switch (long "plugin-aspect-ratio" <> help "enable official aspect ratio plugin")
-  bAllPlugins        <- switch (long "all-plugins" <> short 'a' <> help "enable all official plugins")
-  themeJson          <- strOption (long "theme" <> short 't' <> help "json file with theme object")
+  content   <- NE.some   (argument str (metavar "SOURCES..."))
+  output    <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
+  mode      <- modeParser
+  plugins   <- Text.pack <$> strOption
+    (  long "plugins"
+    <> short 'p'
+    <> value "typography,forms,line-clamp,aspect-ratio"
+    <> showDefaultWith id
+    <> help "specify enabled plugins"
+    )
+  themeJson <- optional $ strOption
+    (  long "theme"
+    <> short 't'
+    <> help "json file with theme object"
+    )
   pure Cli {..}
 
 modeParser :: Parser Mode
@@ -73,13 +76,13 @@ main = do
   withUtf8 $ do
     cli <- execParser opts
     print cli
-    theme <- getObject $ themeJson cli
+    mTheme <- traverse Text.readFile $ themeJson cli
     runStdoutLoggingT $
       runTailwind $
         def
           & tailwindConfig % tailwindConfigContent .~ toList (content cli)
-          & tailwindConfig % tailwindConfigPlugins .~ plugins cli
-          & tailwindConfig % tailwindConfigTheme   .~ theme
+          & tailwindConfig % tailwindConfigPlugins .~ readPlugins (plugins cli)
+          & maybe id (set $ tailwindConfig % tailwindConfigTheme) mTheme
           & tailwindOutput .~ output cli
           & tailwindMode .~ mode cli
   where
@@ -89,17 +92,9 @@ main = do
         ( fullDesc
             <> progDesc "Run Tailwind"
         )
-    plugins Cli{..} =
-      if bAllPlugins
-      then [PluginTypography, PluginForms, PluginLineClamp, PluginAspectRatio]
-      else
-           bool [] [PluginTypography ] bPluginTypography
-        <> bool [] [PluginForms      ] bPluginForms
-        <> bool [] [PluginLineClamp  ] bPluginLineClamp
-        <> bool [] [PluginAspectRatio] bPluginAspectRatio
-
-    getObject filename = Aeson.eitherDecodeFileStrict' filename >>= \case
-      Right o   -> pure o
-      Left  msg -> error $ "Could not decode file "
-                         <> Text.pack filename <> ":"
-                         <> Text.pack (show msg)
+    readPlugins txt =
+      let ePlugins = for (Text.splitOn "," txt) \strPlugin ->
+            case readMaybe $ Text.unpack $ Text.toLower $ Text.strip strPlugin of
+              Just plugin -> pure plugin
+              Nothing     -> Left $ "Could not parse " <> strPlugin
+      in  either error id ePlugins

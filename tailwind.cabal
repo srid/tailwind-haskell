@@ -32,13 +32,13 @@ common c
 
   build-depends:
     , base          >=4.13.0.0 && <=4.17.0.0
-    , aeson
     , data-default
     , filepath
     , filepattern
     , monad-logger
     , optics-th
     , relude
+    , text
 
   default-extensions:
     FlexibleContexts
@@ -59,18 +59,15 @@ library
   hs-source-dirs:  src
   exposed-modules: Web.Tailwind
   build-depends:
-    , aeson
-    , async
+      async
     , bytestring
     , containers
-    , deriving-aeson
     , directory
     , mtl
     , neat-interpolation
     , profunctors
     , safe-exceptions
     , temporary
-    , text
     , time
     , unliftio
     , which
