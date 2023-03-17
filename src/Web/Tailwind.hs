@@ -24,6 +24,7 @@ module Web.Tailwind
     tailwindOutput,
     tailwindConfigContent,
     tailwindConfigPlugins,
+    tailwindConfigTheme,
     tailwindMode,
   )
 where
@@ -45,6 +46,8 @@ import UnliftIO.Directory (removeFile)
 import UnliftIO.Process (callProcess)
 import UnliftIO.Temporary (withSystemTempFile)
 import qualified Data.Text as Text
+import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.KeyMap as Aeson
 
 data OfficialPlugin
   = PluginTypography
@@ -69,7 +72,8 @@ mkStrPlugin plugin = "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
 data TailwindConfig = TailwindConfig
   { -- | List of source patterns that reference CSS classes
     _tailwindConfigContent :: [FilePath],
-    _tailwindConfigPlugins :: [OfficialPlugin]
+    _tailwindConfigPlugins :: [OfficialPlugin],
+    _tailwindConfigTheme   :: Aeson.Object
   }
   deriving (Generic)
 
@@ -98,6 +102,7 @@ instance Default TailwindConfig where
           , PluginForms
           , PluginAspectRatio
           ]
+      , _tailwindConfigTheme = Aeson.empty
       }
 
 instance Default Tailwind where
@@ -122,6 +127,7 @@ instance Text.Show.Show TailwindConfig where
   show TailwindConfig{..} =
     let lsContent = decodeUtf8 $ encode _tailwindConfigContent
         strPlugins = Text.intercalate ",\n" $ mkStrPlugin <$> _tailwindConfigPlugins
+        strTheme = decodeUtf8 $ encode _tailwindConfigTheme
      in
         -- Use `Object.assign` to merge JSON (produced in Haskell) with the rest of
         -- config (defined by raw JS; that cannot be JSON encoded)
@@ -132,7 +138,7 @@ instance Text.Show.Show TailwindConfig where
               {content: ${lsContent}},
               {
                 theme: {
-                  extend: {},
+                  ${strTheme}
                 },
                 plugins: [
                   ${strPlugins}
