@@ -9,13 +9,42 @@ import Data.Default (Default (def))
 import Main.Utf8 (withUtf8)
 import Optics.Core ((%), (.~))
 import Options.Applicative
+    ( argument,
+      fullDesc,
+      help,
+      info,
+      long,
+      metavar,
+      progDesc,
+      short,
+      str,
+      strOption,
+      switch,
+      value,
+      execParser,
+      helper,
+      Parser )
 import System.FilePattern (FilePattern)
 import Web.Tailwind
+    ( Mode(..),
+      tailwindConfigContent,
+      tailwindConfig,
+      tailwindMode,
+      tailwindOutput,
+      runTailwind,
+      OfficialPlugin(PluginAspectRatio, PluginTypography, PluginForms,
+                     PluginLineClamp),
+      tailwindConfigPlugins )
 
 data Cli = Cli
   { content :: NonEmpty FilePattern,
     output :: FilePath,
-    mode :: Mode
+    mode :: Mode,
+    bPluginTypography  :: Bool,
+    bPluginForms       :: Bool,
+    bPluginLineClamp   :: Bool,
+    bPluginAspectRatio :: Bool,
+    bAllPlugins        :: Bool
   }
   deriving (Eq, Show)
 
@@ -24,6 +53,11 @@ cliParser = do
   content <- NE.some (argument str (metavar "SOURCES..."))
   output <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
   mode <- modeParser
+  bPluginTypography  <- switch (long "plugin-typography"   <> help "enable official typography plugin")
+  bPluginForms       <- switch (long "plugin-forms"        <> help "enable official forms plugin")
+  bPluginLineClamp   <- switch (long "plugin-line-clamp"   <> help "enable official line-clamp plugin")
+  bPluginAspectRatio <- switch (long "plugin-aspect-ratio" <> help "enable official aspect ratio plugin")
+  bAllPlugins        <- switch (long "all-plugins" <> short 'a' <> help "enable all official plugins")
   pure Cli {..}
 
 modeParser :: Parser Mode
@@ -39,6 +73,7 @@ main = do
       runTailwind $
         def
           & tailwindConfig % tailwindConfigContent .~ toList (content cli)
+          & tailwindConfig % tailwindConfigPlugins .~ plugins cli
           & tailwindOutput .~ output cli
           & tailwindMode .~ mode cli
   where
@@ -48,3 +83,11 @@ main = do
         ( fullDesc
             <> progDesc "Run Tailwind"
         )
+    plugins Cli{..} =
+      if bAllPlugins
+      then [PluginTypography, PluginForms, PluginLineClamp, PluginAspectRatio]
+      else
+           bool [] [PluginTypography ] bPluginTypography
+        <> bool [] [PluginForms      ] bPluginForms
+        <> bool [] [PluginLineClamp  ] bPluginLineClamp
+        <> bool [] [PluginAspectRatio] bPluginAspectRatio

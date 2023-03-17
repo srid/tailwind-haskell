@@ -18,10 +18,12 @@ module Web.Tailwind
     TailwindConfig (..),
     Tailwind (..),
     Mode (..),
+    OfficialPlugin (..),
     tailwindConfig,
     tailwindInput,
     tailwindOutput,
     tailwindConfigContent,
+    tailwindConfigPlugins,
     tailwindMode,
   )
 where
@@ -30,7 +32,6 @@ import Control.Monad.Logger (MonadLogger, logInfoN)
 import Data.Aeson (encode)
 import Data.ByteString (hPut)
 import Data.Default (Default (def))
-import Deriving.Aeson
 import NeatInterpolation (text)
 import Optics.TH (makeLenses)
 import System.CPUTime (getCPUTime)
@@ -43,6 +44,23 @@ import UnliftIO (MonadUnliftIO, finally)
 import UnliftIO.Directory (removeFile)
 import UnliftIO.Process (callProcess)
 import UnliftIO.Temporary (withSystemTempFile)
+import qualified Data.Text as Text
+
+data OfficialPlugin
+  = PluginTypography
+  | PluginForms
+  | PluginLineClamp
+  | PluginAspectRatio
+
+instance Text.Show.Show OfficialPlugin where
+  show = \case
+    PluginTypography  -> "typography"
+    PluginForms       -> "forms"
+    PluginLineClamp   -> "line-clamp"
+    PluginAspectRatio -> "aspect-ratio"
+
+mkStrPlugin :: OfficialPlugin -> Text
+mkStrPlugin plugin = "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
 
 -- | Haskell version of tailwind.config.js
 --
@@ -50,16 +68,10 @@ import UnliftIO.Temporary (withSystemTempFile)
 -- with arbitrary JS code.
 data TailwindConfig = TailwindConfig
   { -- | List of source patterns that reference CSS classes
-    _tailwindConfigContent :: [FilePath]
+    _tailwindConfigContent :: [FilePath],
+    _tailwindConfigPlugins :: [OfficialPlugin]
   }
   deriving (Generic)
-  deriving
-    (ToJSON)
-    via CustomJSON
-          '[ FieldLabelModifier
-               '[StripPrefix "_tailwindConfig", CamelToSnake]
-           ]
-          TailwindConfig
 
 newtype Css = Css {unCss :: Text}
 
@@ -80,6 +92,12 @@ instance Default TailwindConfig where
   def =
     TailwindConfig
       { _tailwindConfigContent = []
+      , _tailwindConfigPlugins =
+          [ PluginTypography
+          , PluginLineClamp
+          , PluginForms
+          , PluginAspectRatio
+          ]
       }
 
 instance Default Tailwind where
@@ -101,26 +119,26 @@ instance Default Css where
       |]
 
 instance Text.Show.Show TailwindConfig where
-  show (decodeUtf8 . encode -> config) =
-    -- Use `Object.assign` to merge JSON (produced in Haskell) with the rest of
-    -- config (defined by raw JS; that cannot be JSON encoded)
-    toString
-      [text|
-      module.exports =
-        Object.assign(
-          ${config},
-          {
-            theme: {
-              extend: {},
-            },
-            plugins: [
-              require('@tailwindcss/typography'),
-              require('@tailwindcss/forms'),
-              require('@tailwindcss/line-clamp'),
-              require('@tailwindcss/aspect-ratio')
-            ],
-          })
-      |]
+  show TailwindConfig{..} =
+    let lsContent = decodeUtf8 $ encode _tailwindConfigContent
+        strPlugins = Text.intercalate ",\n" $ mkStrPlugin <$> _tailwindConfigPlugins
+     in
+        -- Use `Object.assign` to merge JSON (produced in Haskell) with the rest of
+        -- config (defined by raw JS; that cannot be JSON encoded)
+        toString
+          [text|
+          module.exports =
+            Object.assign(
+              {content: ${lsContent}},
+              {
+                theme: {
+                  extend: {},
+                },
+                plugins: [
+                  ${strPlugins}
+                ],
+              })
+          |]
 
 tailwind :: FilePath
 tailwind = $(staticWhich "tailwind")
