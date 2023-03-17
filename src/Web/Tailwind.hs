@@ -7,9 +7,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | Tailwind runner in Haskell
---
--- TODO: Add `main` with CLI parser.
--- > tailwind-run [-w] 'src/**/*.hs'
 module Web.Tailwind
   ( -- * Runner
     runTailwind,
@@ -18,18 +15,18 @@ module Web.Tailwind
     TailwindConfig (..),
     Tailwind (..),
     Mode (..),
-    OfficialPlugin (..),
+    Plugin (..),
     tailwindConfig,
     tailwindInput,
     tailwindOutput,
     tailwindConfigContent,
     tailwindConfigPlugins,
+    tailwindConfigTheme,
     tailwindMode,
   )
 where
 
 import Control.Monad.Logger (MonadLogger, logInfoN)
-import Data.Aeson (encode)
 import Data.ByteString (hPut)
 import Data.Default (Default (def))
 import NeatInterpolation (text)
@@ -44,23 +41,30 @@ import UnliftIO (MonadUnliftIO, finally)
 import UnliftIO.Directory (removeFile)
 import UnliftIO.Process (callProcess)
 import UnliftIO.Temporary (withSystemTempFile)
+import qualified Text.Read
+import Text.ParserCombinators.ReadP (string, choice)
 import qualified Data.Text as Text
 
-data OfficialPlugin
-  = PluginTypography
-  | PluginForms
-  | PluginLineClamp
-  | PluginAspectRatio
+data Plugin
+  = Typography
+  | Forms
+  | LineClamp
+  | AspectRatio
 
-instance Text.Show.Show OfficialPlugin where
+instance Text.Show.Show Plugin where
   show = \case
-    PluginTypography  -> "typography"
-    PluginForms       -> "forms"
-    PluginLineClamp   -> "line-clamp"
-    PluginAspectRatio -> "aspect-ratio"
+    Typography  -> "typography"
+    Forms       -> "forms"
+    LineClamp   -> "line-clamp"
+    AspectRatio -> "aspect-ratio"
 
-mkStrPlugin :: OfficialPlugin -> Text
-mkStrPlugin plugin = "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
+instance Text.Read.Read Plugin where
+  readPrec = Text.Read.lift $ choice
+    [ string "typography"   $> Typography
+    , string "forms"        $> Forms
+    , string "line-clamp"   $> LineClamp
+    , string "aspect-ratio" $> AspectRatio
+    ]
 
 -- | Haskell version of tailwind.config.js
 --
@@ -69,9 +73,9 @@ mkStrPlugin plugin = "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
 data TailwindConfig = TailwindConfig
   { -- | List of source patterns that reference CSS classes
     _tailwindConfigContent :: [FilePath],
-    _tailwindConfigPlugins :: [OfficialPlugin]
+    _tailwindConfigPlugins :: [Plugin],
+    _tailwindConfigTheme   :: Text
   }
-  deriving (Generic)
 
 newtype Css = Css {unCss :: Text}
 
@@ -92,7 +96,13 @@ instance Default TailwindConfig where
   def =
     TailwindConfig
       { _tailwindConfigContent = []
-      , _tailwindConfigPlugins = []
+      , _tailwindConfigPlugins =
+          [ Typography
+          , LineClamp
+          , Forms
+          , AspectRatio
+          ]
+      , _tailwindConfigTheme = ""
       }
 
 instance Default Tailwind where
@@ -115,24 +125,23 @@ instance Default Css where
 
 instance Text.Show.Show TailwindConfig where
   show TailwindConfig{..} =
-    let lsContent = decodeUtf8 $ encode _tailwindConfigContent
+    let content = Text.pack $ show _tailwindConfigContent
+        mkStrPlugin plugin = "require('@tailwindcss/" <> show plugin <> "')"
         strPlugins = Text.intercalate ",\n" $ mkStrPlugin <$> _tailwindConfigPlugins
-     in
-        -- Use `Object.assign` to merge JSON (produced in Haskell) with the rest of
-        -- config (defined by raw JS; that cannot be JSON encoded)
-        toString
+        theme = if Text.null _tailwindConfigTheme
+          then ""
+          else "\ntheme: " <> Text.strip _tailwindConfigTheme <> ",\n"
+     in toString
           [text|
-          module.exports =
-            Object.assign(
-              {content: ${lsContent}},
-              {
-                theme: {
-                  extend: {},
-                },
-                plugins: [
-                  ${strPlugins}
-                ],
-              })
+          const defaultTheme = require('tailwindcss/defaultTheme')
+          const colors = require('tailwindcss/colors')
+
+          module.exports = {
+            content: ${content},${theme}
+            plugins: [
+              ${strPlugins}
+            ]
+          }
           |]
 
 tailwind :: FilePath
