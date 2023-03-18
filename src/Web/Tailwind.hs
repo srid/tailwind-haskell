@@ -14,6 +14,7 @@ module Web.Tailwind
     -- * Types
     TailwindConfig (..),
     Tailwind (..),
+    Css (..),
     Mode (..),
     Plugin (..),
     tailwindConfig,

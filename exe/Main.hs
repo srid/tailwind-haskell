@@ -33,7 +33,7 @@ import Web.Tailwind
       tailwindMode,
       tailwindOutput,
       runTailwind,
-      tailwindConfigPlugins, tailwindConfigTheme )
+      tailwindConfigPlugins, tailwindConfigTheme, tailwindInput, Css (..) )
 import qualified Data.Text as Text
 import Data.Traversable (for)
 import Optics.Setter (set)
@@ -44,26 +44,39 @@ data Cli = Cli
     output :: FilePath,
     mode :: Mode,
     plugins :: Text,
-    themeJson :: Maybe FilePath
+    themeJson :: Maybe FilePath,
+    css :: Maybe FilePath
   }
   deriving (Eq, Show)
 
 cliParser :: Parser Cli
 cliParser = do
   content   <- NE.some   (argument str (metavar "SOURCES..."))
-  output    <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
+  output    <- strOption
+    (  long "output"
+    <> short 'o'
+    <> metavar "OUTPUT"
+    <> value "tailwind.css"
+    )
   mode      <- modeParser
   plugins   <- Text.pack <$> strOption
     (  long "plugins"
     <> short 'p'
     <> value "typography,forms,line-clamp,aspect-ratio"
     <> showDefaultWith id
-    <> help "specify enabled plugins"
+    <> help "Specify enabled plugins"
     )
   themeJson <- optional $ strOption
     (  long "theme"
     <> short 't'
-    <> help "json file with theme object"
+    <> metavar "FILE"
+    <> help "Javascript for theme configuration"
+    )
+  css       <- optional $ strOption
+    (  long "css"
+    <> short 'c'
+    <> metavar "FILE"
+    <> help "Customized tailwind css input"
     )
   pure Cli {..}
 
@@ -77,12 +90,14 @@ main = do
     cli <- execParser opts
     print cli
     mTheme <- traverse Text.readFile $ themeJson cli
+    mCss <- traverse Text.readFile $ css cli
     runStdoutLoggingT $
       runTailwind $
         def
           & tailwindConfig % tailwindConfigContent .~ toList (content cli)
           & tailwindConfig % tailwindConfigPlugins .~ readPlugins (plugins cli)
           & maybe id (set $ tailwindConfig % tailwindConfigTheme) mTheme
+          & maybe id (set tailwindInput . Css) mCss
           & tailwindOutput .~ output cli
           & tailwindMode .~ mode cli
   where
