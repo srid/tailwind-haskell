@@ -1,5 +1,7 @@
 # tailwind
 
+test
+
 Run TailwindCSS CLI [without needing](https://srid.ca/nojs) to touch anything JavaScript. No `input.css` or `tailwind.config.js` is necessary.
 
 ```sh-session
