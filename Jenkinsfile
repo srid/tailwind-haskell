@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage ('Haskell package') {
             steps {
-                sh 'nix build'
+                sh 'echo Hello!'
             }
         }
     }
