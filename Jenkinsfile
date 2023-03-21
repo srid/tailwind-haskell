@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage ('Haskell package') {
             steps {
-                sh 'echo Hello!'
+                sh 'echo Hello WOrld!'
             }
         }
     }
