@@ -1,5 +1,6 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Main where
 
@@ -23,7 +24,7 @@ import Options.Applicative
       value,
       execParser,
       helper,
-      Parser )
+      Parser, option, ReadM, eitherReader, showDefaultWith )
 import System.FilePattern (FilePattern)
 import Web.Tailwind
     ( Mode(..),
@@ -32,37 +33,59 @@ import Web.Tailwind
       tailwindMode,
       tailwindOutput,
       runTailwind,
-      OfficialPlugin(PluginAspectRatio, PluginTypography, PluginForms,
-                     PluginLineClamp),
+      Plugin(..),
       tailwindConfigPlugins )
+import qualified Text.Megaparsec as Mega
+import qualified Text.Megaparsec.Char as Mega
 
 data Cli = Cli
   { content :: NonEmpty FilePattern,
     output :: FilePath,
     mode :: Mode,
-    bPluginTypography  :: Bool,
-    bPluginForms       :: Bool,
-    bPluginLineClamp   :: Bool,
-    bPluginAspectRatio :: Bool,
-    bAllPlugins        :: Bool
+    plugins :: [Plugin]
   }
-  deriving (Eq, Show)
+  -- deriving (Eq, Show)
+  deriving (Show)
 
 cliParser :: Parser Cli
 cliParser = do
   content <- NE.some (argument str (metavar "SOURCES..."))
-  output <- strOption (long "output" <> short 'o' <> metavar "OUTPUT" <> value "tailwind.css")
+  output <- strOption
+    (  long "output"
+    <> short 'o'
+    <> metavar "OUTPUT"
+    <> value "tailwind.css"
+    )
   mode <- modeParser
-  bPluginTypography  <- switch (long "plugin-typography"   <> help "enable official typography plugin")
-  bPluginForms       <- switch (long "plugin-forms"        <> help "enable official forms plugin")
-  bPluginLineClamp   <- switch (long "plugin-line-clamp"   <> help "enable official line-clamp plugin")
-  bPluginAspectRatio <- switch (long "plugin-aspect-ratio" <> help "enable official aspect ratio plugin")
-  bAllPlugins        <- switch (long "all-plugins" <> short 'a' <> help "enable all official plugins")
+  plugins <- pluginsParser
   pure Cli {..}
 
 modeParser :: Parser Mode
 modeParser = do
   bool Production JIT <$> switch (long "watch" <> short 'w' <> help "Run JIT")
+
+pluginsParser :: Parser [Plugin]
+pluginsParser = option megaparsecPlugins
+    (  long "plugins"
+    <> short 'p'
+    <> value [Typography, Forms, LineClamp, AspectRatio]
+    <> showDefaultWith (intercalate "," . fmap show)
+    <> help "specify enabled plugins, \"\" for none"
+    )
+  where
+    megaparsecPlugins = megaparsecReader $ Mega.sepBy plugin sep
+
+    sep = Mega.hspace *> Mega.char ',' *> Mega.hspace
+    plugin = asum $ (\(s, t) -> Mega.string' s $> t) <$>
+      [ ("typography"  , Typography )
+      , ("forms"       , Forms      )
+      , ("line-clamp"  , LineClamp  )
+      , ("aspect-ratio", AspectRatio)
+      ]
+
+    megaparsecReader :: Mega.Parsec Void Text a -> ReadM a
+    megaparsecReader p = eitherReader
+      $ first Mega.errorBundlePretty . Mega.parse p "<optparse-input>" . toText
 
 main :: IO ()
 main = do
@@ -83,11 +106,3 @@ main = do
         ( fullDesc
             <> progDesc "Run Tailwind"
         )
-    plugins Cli{..} =
-      if bAllPlugins
-      then [PluginTypography, PluginForms, PluginLineClamp, PluginAspectRatio]
-      else
-           bool [] [PluginTypography ] bPluginTypography
-        <> bool [] [PluginForms      ] bPluginForms
-        <> bool [] [PluginLineClamp  ] bPluginLineClamp
-        <> bool [] [PluginAspectRatio] bPluginAspectRatio

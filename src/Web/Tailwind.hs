@@ -8,8 +8,6 @@
 
 -- | Tailwind runner in Haskell
 --
--- TODO: Add `main` with CLI parser.
--- > tailwind-run [-w] 'src/**/*.hs'
 module Web.Tailwind
   ( -- * Runner
     runTailwind,
@@ -18,7 +16,7 @@ module Web.Tailwind
     TailwindConfig (..),
     Tailwind (..),
     Mode (..),
-    OfficialPlugin (..),
+    Plugin (..),
     tailwindConfig,
     tailwindInput,
     tailwindOutput,
@@ -29,7 +27,6 @@ module Web.Tailwind
 where
 
 import Control.Monad.Logger (MonadLogger, logInfoN)
-import Data.Aeson (encode)
 import Data.ByteString (hPut)
 import Data.Default (Default (def))
 import NeatInterpolation (text)
@@ -46,30 +43,27 @@ import UnliftIO.Process (callProcess)
 import UnliftIO.Temporary (withSystemTempFile)
 import qualified Data.Text as Text
 
-data OfficialPlugin
-  = PluginTypography
-  | PluginForms
-  | PluginLineClamp
-  | PluginAspectRatio
+data Plugin
+  = Typography
+  | Forms
+  | LineClamp
+  | AspectRatio
 
-instance Text.Show.Show OfficialPlugin where
+instance Show Plugin where
   show = \case
-    PluginTypography  -> "typography"
-    PluginForms       -> "forms"
-    PluginLineClamp   -> "line-clamp"
-    PluginAspectRatio -> "aspect-ratio"
-
-mkStrPlugin :: OfficialPlugin -> Text
-mkStrPlugin plugin = "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
+    Typography  -> "typography"
+    Forms       -> "forms"
+    LineClamp   -> "line-clamp"
+    AspectRatio -> "aspect-ratio"
 
 -- | Haskell version of tailwind.config.js
 --
--- Only the subset we care to define, as some fields (eg: plugins) are defined
--- with arbitrary JS code.
 data TailwindConfig = TailwindConfig
   { -- | List of source patterns that reference CSS classes
     _tailwindConfigContent :: [FilePath],
-    _tailwindConfigPlugins :: [OfficialPlugin]
+    -- | List of the "official tailwind" plugins,
+    --   cf. https://tailwindcss.com/docs/plugins
+    _tailwindConfigPlugins :: [Plugin]
   }
   deriving (Generic)
 
@@ -92,7 +86,12 @@ instance Default TailwindConfig where
   def =
     TailwindConfig
       { _tailwindConfigContent = []
-      , _tailwindConfigPlugins = []
+      , _tailwindConfigPlugins =
+          [ Typography
+          , Forms
+          , LineClamp
+          , AspectRatio
+          ]
       }
 
 instance Default Tailwind where
@@ -115,25 +114,20 @@ instance Default Css where
 
 instance Text.Show.Show TailwindConfig where
   show TailwindConfig{..} =
-    let lsContent = decodeUtf8 $ encode _tailwindConfigContent
-        strPlugins = Text.intercalate ",\n" $ mkStrPlugin <$> _tailwindConfigPlugins
-     in
-        -- Use `Object.assign` to merge JSON (produced in Haskell) with the rest of
-        -- config (defined by raw JS; that cannot be JSON encoded)
-        toString
-          [text|
-          module.exports =
-            Object.assign(
-              {content: ${lsContent}},
-              {
-                theme: {
-                  extend: {},
-                },
-                plugins: [
-                  ${strPlugins}
-                ],
-              })
-          |]
+    toString [text|
+        module.exports = {
+            content: ${content},${strPlugins}
+        }
+        |]
+    where
+      content = Text.pack $ show _tailwindConfigContent
+      strPlugins = if null _tailwindConfigPlugins
+        then ""
+        else "\nplugins: [\n    "
+          <> Text.intercalate ",\n    " (mkJSStrPlugin <$> _tailwindConfigPlugins)
+          <> "\n]"
+      mkJSStrPlugin plugin =
+          "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
 
 tailwind :: FilePath
 tailwind = $(staticWhich "tailwind")
