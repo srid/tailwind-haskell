@@ -84,3 +84,14 @@ executable tailwind-run
     , parser-combinators
     , tailwind
     , with-utf8
+
+test-suite tests
+  import:         c
+  main-is:        Main.hs
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: tests
+  build-depends:
+      hspec
+    , neat-interpolation
+    , optics-core
+    , tailwind
