@@ -5,12 +5,8 @@
     # https://github.com/srid/haskell-template/issues/64
     nixpkgs.url = "github:nixos/nixpkgs/0cfb3c002b61807ca0bab3efe514476bdf2e5478";
     flake-utils.url = "github:numtide/flake-utils/v1.0.0";
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
-  outputs = inputs@{ self, nixpkgs, flake-utils, flake-compat, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs =
