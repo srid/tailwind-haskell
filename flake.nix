@@ -30,7 +30,7 @@
             modifier = drv:
               pkgs.haskell.lib.addBuildTools drv
                 (with pkgs.haskellPackages; [
-                  # Specify your build/dev dependencies here. 
+                  # Specify your build/dev dependencies here.
                   cabal-fmt
                   cabal-install
                   ghcid
