@@ -6,6 +6,7 @@
   - GHC 9 support
   - Explicitly specify nixpkgs input in flake
 - Log path to the tailwind binary used.
+- #13: Allowing passing plugins in CLI
 
 ## 0.3.0.0
 
