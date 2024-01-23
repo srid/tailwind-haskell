@@ -1,8 +1,6 @@
 {
   description = "tailwind-haskell's description";
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    # https://github.com/srid/haskell-template/issues/64
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils/v1.0.0";
   };
