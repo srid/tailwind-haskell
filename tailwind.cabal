@@ -31,7 +31,7 @@ common c
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
 
   build-depends:
-    , base          >=4.13.0.0 && <=4.17.0.0
+    , base          >=4.13.0.0 && <=4.99.0.0
     , data-default
     , filepath
     , filepattern
