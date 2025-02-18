@@ -15,7 +15,7 @@
 
       perSystem = { config, system, pkgs, ... }:
         let
-          tailwindCss = pkgs.nodePackages.tailwindcss.overrideAttrs (oa: {
+          tailwindCss = pkgs.tailwindcss_4.overrideAttrs (oa: {
             plugins = [
               pkgs.nodePackages."@tailwindcss/aspect-ratio"
               pkgs.nodePackages."@tailwindcss/forms"
