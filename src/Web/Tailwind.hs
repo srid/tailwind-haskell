@@ -130,7 +130,7 @@ instance Text.Show.Show TailwindConfig where
           "require('@tailwindcss/" <> Text.pack (show plugin) <> "')"
 
 tailwind :: FilePath
-tailwind = $(staticWhich "tailwind")
+tailwind = $(staticWhich "tailwindcss")
 
 modeArgs :: Mode -> [String]
 modeArgs = \case

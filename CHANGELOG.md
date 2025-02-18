@@ -1,12 +1,13 @@
 # Revision history for tailwind (Haskell)
 
-## Unreleased
+## Unreleased (0.4.0.0)
 
 - Nix
   - GHC 9 support
   - Explicitly specify nixpkgs input in flake
 - Log path to the tailwind binary used.
 - #13: Allowing passing plugins in CLI
+- #23: Due to upstream change, we now look for `tailwindcss` binary
 
 ## 0.3.0.0
 
